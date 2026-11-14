@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إشارات OKX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+:root{--bg:#0b0e11;--card:#13171c;--line:#232a33;--ink:#e8edf2;--mut:#8b96a5;--up:#1fbf75;--dn:#f0475a;--warn:#e6b450;--acc:#3aa0ff}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "IBM Plex Sans Arabic",system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:1240px;margin:auto;padding:16px max(3vw,12px) 40px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+h1{font-size:26px;margin:0;line-height:1.1}
+h2{font-size:19px;margin:28px 0 10px}
+.mut{color:var(--mut);font-size:13px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,select{font:inherit;font-size:15px;background:#1b2129;color:var(--ink);border:1px solid var(--line);border-radius:8px;min-height:40px;padding:0 14px;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:2px solid var(--acc)}
+.seg button.on{background:var(--acc);border-color:var(--acc);color:#04121f;font-weight:700}
+.ltr{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
+.card.sel{border-color:var(--acc)}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sym{font-size:22px;font-weight:700}
+.px{font-size:20px}
+.up{color:var(--up)}.dn{color:var(--dn)}.wa{color:var(--warn)}
+.badge{display:inline-block;padding:3px 12px;border-radius:99px;font-weight:700;font-size:15px}
+.b-up{background:#123d2a;color:#5ff0a8}.b-dn{background:#45161d;color:#ff8c99}.b-n{background:#262c34;color:#c5ced8}.b-w{background:#3d3214;color:#f3cf7a}
+.meter{height:8px;background:#232a33;border-radius:9px;position:relative;margin:10px 0 4px;overflow:hidden}
+.meter i{position:absolute;top:0;bottom:0;border-radius:9px}
+.meter b{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#56606d}
+.row2{display:flex;gap:14px;align-items:center;margin-top:10px}
+.win{font-size:34px;font-weight:700;line-height:1}
+.plan{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:10px;font-size:14px}
+.plan div{display:flex;justify-content:space-between;gap:6px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.mtf{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.mtf span{font-size:12px;padding:2px 8px;border-radius:6px;background:#1b2129}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.det{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:14px}
+#chart{height:420px;direction:ltr}
+ul.rs{list-style:none;padding:0;margin:6px 0}
+ul.rs li{padding:4px 0;border-bottom:1px solid var(--line);font-size:14px}
+ul.rs li::before{content:attr(data-s);display:inline-block;width:20px;font-weight:700}
+.bt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.bt div{background:#1b2129;border-radius:8px;padding:8px;font-size:13px}
+.bt strong{display:block;font-size:20px}
+.bar{height:6px;background:#232a33;border-radius:9px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--acc);width:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{color:var(--mut);font-weight:500;text-align:right;padding:8px 6px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
+td{padding:8px 6px;border-bottom:1px solid var(--line)}
+tbody tr{cursor:pointer}tbody tr:hover{background:#171c22}
+.num{text-align:left}
+#err{display:none;background:#45161d;color:#ffd0d5;padding:12px;border-radius:10px;margin-bottom:12px}
+.note{font-size:13px;color:var(--mut);margin-top:24px;border-top:1px solid var(--line);padding-top:12px}
+@media(max-width:800px){.det{grid-template-columns:1fr}#chart{height:320px}}
+@media(max-width:600px){h1{font-size:22px}.stack thead{display:none}.stack tr{display:grid;padding-block:8px;border-bottom:1px solid var(--line)}.stack td{display:flex;justify-content:space-between;gap:12px;border:0;padding:3px 4px}.stack td::before{content:attr(data-l);color:var(--mut)}.num{text-align:right}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>إشارات التداول — OKX</h1><div class="mut">تحليل فني آلي ببيانات OKX المباشرة · <span id="upd">جارِ التحميل…</span></div></div>
+  <div class="ctl">
+    <div class="seg ctl" id="tfs"><button data-tf="1H">ساعة</button><button data-tf="4H">4 ساعات</button><button data-tf="1D">يومي</button></div>
+    <button id="ref">تحديث</button>
+  </div>
+</header>
+<div id="err"></div>
+
+<div class="grid" id="focus"></div>
+
+<div class="panel">
+  <div class="top"><div class="sym" id="dTitle">—</div><div class="mut" id="dSub"></div></div>
+  <div class="det">
+    <div><div id="chart"></div><div class="mut">الأسهم الخضراء = إشارات شراء سابقة، الحمراء = إشارات خروج. الخطوط: المتوسطات 20 / 50 / 200.</div></div>
+    <div>
+      <strong>لماذا هذه التوصية؟</strong>
+      <ul class="rs" id="dWhy"></ul>
+      <strong>اختبار الإشارة على تاريخ العملة</strong>
+      <div class="bt" id="dBt"></div>
+      <div class="mut" id="dSr" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<h2>ماسح كل العملات على المنصة</h2>
+<div class="ctl">
+  <select id="cnt"><option value="50">أعلى 50 حجماً</option><option value="100" selected>أعلى 100 حجماً</option><option value="200">أعلى 200</option><option value="9999">كل العملات</option></select>
+  <select id="flt"><option value="all">كل الإشارات</option><option value="buy">شراء فقط</option><option value="sell">خروج فقط</option></select>
+  <button id="scan">ابدأ المسح</button>
+  <span class="mut" id="scanMsg"></span>
+</div>
+<div class="bar"><i id="prog"></i></div>
+<div class="scroll"><table class="stack"><thead><tr>
+  <th data-k="sym">العملة</th><th data-k="last" class="num">السعر</th><th data-k="chg" class="num">24س</th><th data-k="score">الإشارة</th><th data-k="score" class="num">القوة</th><th data-k="win" class="num">نسبة النجاح</th><th data-k="n" class="num">صفقات الاختبار</th>
+</tr></thead><tbody id="tb"></tbody></table></div>
+
+<p class="note">طريقة الحساب: كل إطار زمني يُقيَّم بالاتجاه (المتوسطات 20/50/200 و ADX) والزخم (MACD و RSI) وبولنجر والحجم، ويُعطى درجة من −100 إلى +100. وقف الخسارة = 1.5 × ATR، الهدف الأول = 1.5 × ATR والثاني = 3 × ATR. «نسبة النجاح» هي كم مرة وصلت نفس الإشارة سابقاً على نفس العملة والإطار إلى الهدف الأول قبل وقف الخسارة — إحصاء تاريخي وليس ضماناً. أقل من 8 صفقات اختبار = عينة ضعيفة. هذه أداة مساعدة وليست نصيحة مالية؛ العملات الرقمية عالية المخاطر، لا تخاطر بأكثر من 1–2% من رأس المال في صفقة.</p>
+</div>
+
+<script>
+{
+const BASE='https://www.okx.com';
+const FOCUS=['LINK-USDT','SUI-USDT','SOL-USDT'];
+const TFS=['1H','4H','1D'];
+const STABLE=/^(USDC|USDT|DAI|FDUSD|TUSD|USDG|PYUSD|USDE|EURT|EURC|USDD|BUSD|USTC|USD1|RLUSD|XAUT|PAXG)-/;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let TF='4H';try{TF=localStorage.getItem('okx_tf')||'4H'}catch(e){}
+const cache={};const tick={};let sel='SOL-USDT';let rows=[];let sortK='score',sortD=-1;let scanId=0;let chart=null;
+
+//CORE-START
+function ema(a,p){const o=Array(a.length).fill(null),k=2/(p+1);let s=0,c=0,st=false;for(let i=0;i<a.length;i++){const v=a[i];if(v==null)continue;if(!st){s+=v;c++;if(c===p){st=true;o[i]=s/p}}else o[i]=v*k+o[i-1]*(1-k)}return o}
+function sma(a,p){const o=Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=p)s-=a[i-p];if(i>=p-1)o[i]=s/p}return o}
+function stdev(a,m,p){return a.map((_,i)=>{if(m[i]==null)return null;let s=0;for(let j=i-p+1;j<=i;j++)s+=(a[j]-m[i])**2;return Math.sqrt(s/p)})}
+function rsi(C,p=14){const o=Array(C.length).fill(null);let g=0,l=0;for(let i=1;i<C.length;i++){const d=C[i]-C[i-1],u=Math.max(d,0),w=Math.max(-d,0);if(i<=p){g+=u;l+=w;if(i===p){g/=p;l/=p}else continue}else{g=(g*(p-1)+u)/p;l=(l*(p-1)+w)/p}o[i]=l===0?100:100-100/(1+g/l)}return o}
+function dmi(H,L,C,p=14){const n=C.length,atr=Array(n).fill(null),pdi=Array(n).fill(null),mdi=Array(n).fill(null),adx=Array(n).fill(null);let T=0,P=0,M=0,dS=0,dC=0;
+ for(let i=1;i<n;i++){const tr=Math.max(H[i]-L[i],Math.abs(H[i]-C[i-1]),Math.abs(L[i]-C[i-1]));const u=H[i]-H[i-1],d=L[i-1]-L[i];const pm=u>d&&u>0?u:0,mm=d>u&&d>0?d:0;
+  if(i<=p){T+=tr;P+=pm;M+=mm;if(i<p)continue}else{T=T-T/p+tr;P=P-P/p+pm;M=M-M/p+mm}
+  atr[i]=T/p;pdi[i]=T?100*P/T:0;mdi[i]=T?100*M/T:0;const sm=pdi[i]+mdi[i],dx=sm?100*Math.abs(pdi[i]-mdi[i])/sm:0;
+  if(dC<p){dS+=dx;dC++;if(dC===p)adx[i]=dS/p}else adx[i]=(adx[i-1]*(p-1)+dx)/p}
+ return{atr,pdi,mdi,adx}}
+
+function indicators(B){const C=B.map(b=>b.c),H=B.map(b=>b.h),L=B.map(b=>b.l),V=B.map(b=>b.v);
+ const e12=ema(C,12),e26=ema(C,26),mac=C.map((_,i)=>e12[i]!=null&&e26[i]!=null?e12[i]-e26[i]:null),sig=ema(mac,9),hist=mac.map((m,i)=>m!=null&&sig[i]!=null?m-sig[i]:null);
+ const m20=sma(C,20),sd=stdev(C,m20,20);const d=dmi(H,L,C);
+ return{C,H,L,V,e20:ema(C,20),e50:ema(C,50),e200:ema(C,200),hist,rsi:rsi(C),bu:m20.map((m,i)=>m==null?null:m+2*sd[i]),bl:m20.map((m,i)=>m==null?null:m-2*sd[i]),vm:sma(V,20),...d}}
+
+function scoreAt(I,i,why){const c=I.C[i];if(I.e200[i]==null||I.hist[i-1]==null||I.adx[i]==null||!I.atr[i])return null;let s=0;const r=(v,t)=>{s+=v;if(why)why.push([v,t])};
+ c>I.e200[i]?r(15,'السعر فوق متوسط 200 — الاتجاه العام صاعد'):r(-15,'السعر تحت متوسط 200 — الاتجاه العام هابط');
+ I.e20[i]>I.e50[i]?r(12,'متوسط 20 فوق متوسط 50 — الاتجاه القصير صاعد'):r(-12,'متوسط 20 تحت متوسط 50 — الاتجاه القصير هابط');
+ if(I.adx[i]>22)I.pdi[i]>I.mdi[i]?r(10,'ADX '+I.adx[i].toFixed(0)+' — اتجاه صاعد قوي'):r(-10,'ADX '+I.adx[i].toFixed(0)+' — اتجاه هابط قوي');
+ const h=I.hist[i],hp=I.hist[i-1];
+ if(h>0&&h>hp)r(15,'MACD إيجابي ويتسارع');else if(h>0)r(5,'MACD إيجابي لكن الزخم يضعف');else if(h<0&&h<hp)r(-15,'MACD سلبي ويتسارع هبوطاً');else r(-3,'MACD سلبي لكن الهبوط يهدأ');
+ const R=I.rsi[i],rt='RSI '+R.toFixed(0);
+ if(R>75)r(-12,rt+' — تشبع شرائي');else if(R>=65)r(0,rt+' — مرتفع');else if(R>=45)r(10,rt+' — زخم صحي');else if(R>=30)r(-5,rt+' — زخم ضعيف');else r(8,rt+' — تشبع بيعي، احتمال ارتداد');
+ const w=I.bu[i]-I.bl[i],pb=w?(c-I.bl[i])/w:.5;
+ if(pb<.1&&c>I.e200[i])r(10,'ارتداد قرب حد بولنجر السفلي داخل اتجاه صاعد');else if(pb>1)r(-8,'السعر فوق حد بولنجر العلوي — تمدد');
+ const vr=I.vm[i]?I.V[i]/I.vm[i]:1;if(vr>1.5)(c>=I.C[i-1])?r(10,'حجم تداول مرتفع ×'+vr.toFixed(1)+' مع صعود'):r(-10,'حجم تداول مرتفع ×'+vr.toFixed(1)+' مع هبوط');
+ const ext=(c-I.e20[i])/I.atr[i];if(ext>2.5)r(-10,'السعر بعيد جداً عن متوسط 20 — انتظر تصحيحاً');else if(ext<-2.5)r(5,'السعر بعيد جداً تحت متوسط 20 — قابل للارتداد');
+ return Math.max(-100,Math.min(100,s))}
+
+function backtest(I,S,dir){const n=I.C.length;let n1=0,w1=0,n2=0,w2=0;
+ for(let i=201;i<n-1;i++){if(S[i]==null||S[i-1]==null)continue;
+  const hit=dir>0?(S[i]>=40&&S[i-1]<40):(S[i]<=-40&&S[i-1]>-40);if(!hit)continue;
+  const e=I.C[i],a=I.atr[i],sl=e-dir*1.5*a,t1=e+dir*1.5*a,t2=e+dir*3*a;let r1=null,r2=null,j=i+1;
+  for(;j<n&&j<=i+40;j++){const hi=I.H[j],lo=I.L[j];const stop=dir>0?lo<=sl:hi>=sl;
+   if(r1==null)r1=stop?0:(dir>0?hi>=t1:lo<=t1)?1:null;
+   if(r2==null)r2=stop?0:(dir>0?hi>=t2:lo<=t2)?1:null;
+   if(r2!=null)break}
+  if(r1!=null){n1++;w1+=r1}if(r2!=null){n2++;w2+=r2}i=Math.max(i,j)}
+ return{n1,w1,n2,w2,p1:n1?w1/n1:null,p2:n2?w2/n2:null,exp:n2?(w2*2-(n2-w2))/n2:null}}
+
+function pivots(I){const n=I.C.length,sup=[],res=[],k=5;for(let i=Math.max(k,n-150);i<n-k;i++){let ph=true,pl=true;for(let j=i-k;j<=i+k;j++){if(I.H[j]>I.H[i])ph=false;if(I.L[j]<I.L[i])pl=false}if(ph)res.push(I.H[i]);if(pl)sup.push(I.L[i])}return{sup,res}}
+
+function label(s){if(s==null)return['بيانات غير كافية','b-n',0];if(s>=60)return['شراء قوي','b-up',1];if(s>=40)return['شراء','b-up',1];if(s>=15)return['مراقبة للشراء','b-w',0];if(s>-15)return['انتظار','b-n',0];if(s>-40)return['حذر','b-w',0];return['خروج / بيع','b-dn',-1]}
+
+function analyze(all,live){const B=all.filter(b=>b.ok);if(B.length<215)return{score:null,lab:label(null),B:all};
+ const I=indicators(B),n=B.length,S=B.map((_,i)=>i<200?null:scoreAt(I,i));const why=[];const score=scoreAt(I,n-1,why);
+ const lab=label(score),dir=score!=null&&score<=-15?-1:1,price=live||I.C[n-1],a=I.atr[n-1];
+ const buy=backtest(I,S,1),sell=backtest(I,S,-1);const pv=pivots(I);
+ const res=pv.res.filter(x=>x>price).sort((x,y)=>x-y)[0],sup=pv.sup.filter(x=>x<price).sort((x,y)=>y-x)[0];
+ const plan={dir,entry:price,sl:price-dir*1.5*a,t1:price+dir*1.5*a,t2:price+dir*3*a,better:dir>0&&(price-I.e20[n-1])/a>1?I.e20[n-1]:null};
+ const bt=dir>0?buy:sell;
+ return{score,lab,why,plan,buy,sell,bt,res,sup,I,S,B:all,atr:a}}
+//CORE-END
+
+async function api(path,tries=3){
+ for(let k=0;k<tries;k++){try{const r=await sched(()=>fetch(BASE+path).then(r=>r.json()));if(r.code==='0')return r.data;if(r.code!=='50011')throw new Error(r.msg||r.code)}catch(e){if(k===tries-1)throw e}await sleep(1200)}
+ throw new Error('rate limit')}
+let active=0;const q=[];
+function sched(fn){return new Promise((res,rej)=>{q.push({fn,res,rej});pump()})}
+function pump(){while(active<3&&q.length){const{fn,res,rej}=q.shift();active++;fn().then(res,rej).finally(()=>setTimeout(()=>{active--;pump()},140))}}
+
+async function candles(inst,tf,pages){const rows=await api(`/api/v5/market/candles?instId=${inst}&bar=${tf}&limit=300`);let all=rows.slice();
+ for(let p=0;p<pages&&all.length;p++){const old=all[all.length-1][0];const h=await api(`/api/v5/market/history-candles?instId=${inst}&bar=${tf}&after=${old}&limit=100`);if(!h.length)break;all=all.concat(h)}
+ const seen=new Set();return all.filter(r=>!seen.has(r[0])&&seen.add(r[0])).map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],ok:r[8]==='1'})).sort((a,b)=>a.t-b.t)}
+
+async function load(inst,tf,pages=4){const key=inst+tf;const B=await candles(inst,tf,pages);const t=tick[inst];cache[key]=analyze(B,t?t.last:B[B.length-1].c);cache[key].t=Date.now();return cache[key]}
+
+const dec=p=>p>=1000?2:p>=10?3:p>=1?4:p>=.01?5:7;
+const f=p=>p==null||!isFinite(p)?'—':(+p).toFixed(dec(Math.abs(p)));
+const pct=x=>x==null?'—':(x*100).toFixed(0)+'%';
+const sym=i=>i.replace('-USDT','');
+const chgCls=x=>x>=0?'up':'dn';
+
+function winBlock(A){if(!A.plan)return'<div class="mut">بيانات تاريخية غير كافية لحساب النسبة</div>';const b=A.bt;const weak=!b||b.n1<8;const sc=A.score;const ref=A.lab[2]===0&&A.plan.dir>0;
+ return`<div><div class="win ltr ${weak?'mut':b.p1>=.55?'up':b.p1<.45?'dn':'wa'}">${pct(b&&b.p1)}</div><div class="mut">${ref?'نجاح إشارة الشراء تاريخياً':'نسبة نجاح الصفقة'} · ${b?b.n1:0} صفقة${weak?' (عينة ضعيفة)':''}</div></div>`}
+
+function meter(s){if(s==null)return'<div class="meter"><b></b></div>';const w=Math.abs(s)/2;return`<div class="meter"><b></b><i style="${s>=0?'left:50%':'right:50%'};width:${w}%;background:${s>=0?'var(--up)':'var(--dn)'}"></i></div>`}
+
+function planRows(A){const p=A.plan;if(!p||A.score==null)return'';const L=p.dir>0?['دخول','وقف خسارة','هدف 1','هدف 2']:['خروج عند','إلغاء الإشارة فوق','هبوط متوقع 1','هبوط متوقع 2'];
+ return`<div class="plan"><div><span>${L[0]}</span><span class="ltr">${f(p.entry)}</span></div><div><span>${L[1]}</span><span class="ltr dn">${f(p.sl)}</span></div><div><span>${L[2]}</span><span class="ltr up">${f(p.t1)}</span></div><div><span>${L[3]}</span><span class="ltr up">${f(p.t2)}</span></div>${p.better?`<div style="grid-column:1/-1"><span>دخول أفضل عند ارتداد إلى</span><span class="ltr">${f(p.better)}</span></div>`:''}</div>`}
+
+function renderFocus(){document.getElementById('focus').innerHTML=FOCUS.map(inst=>{const A=cache[inst+TF],t=tick[inst];
+ if(!A)return`<div class="card"><div class="sym">${sym(inst)}</div><div class="mut">جارِ التحليل…</div></div>`;
+ const ch=t?t.chg:null;
+ const mtf=TFS.map(tf=>{const X=cache[inst+tf];const l=X?X.lab:null;return`<span class="${l?(l[2]>0?'up':l[2]<0?'dn':''):''}">${tf}: ${l?l[0]:'…'}</span>`}).join('');
+ return`<div class="card ${sel===inst?'sel':''}" data-i="${inst}"><div class="top"><span class="sym">${sym(inst)}</span><span><span class="px ltr">${f(t?t.last:A.plan&&A.plan.entry)}</span> <span class="ltr ${chgCls(ch)}">${ch==null?'':(ch*100).toFixed(2)+'%'}</span></span></div>
+ <div class="row2"><span class="badge ${A.lab[1]}">${A.lab[0]}</span><span class="mut">القوة <span class="ltr">${A.score==null?'—':(A.score>0?'+':'')+A.score}</span></span></div>${meter(A.score)}
+ <div class="row2">${winBlock(A)}</div>${planRows(A)}<div class="mtf">${mtf}</div></div>`}).join('');
+ document.querySelectorAll('#focus .card[data-i]').forEach(c=>c.onclick=()=>{sel=c.dataset.i;renderFocus();renderDetail()})}
+
+function renderDetail(){const A=cache[sel+TF];const t=tick[sel];document.getElementById('dTitle').textContent=sym(sel)+' / USDT · '+TF;
+ if(!A){document.getElementById('dSub').textContent='جارِ التحليل…';return}
+ document.getElementById('dSub').innerHTML=`<span class="badge ${A.lab[1]}">${A.lab[0]}</span>`;
+ document.getElementById('dWhy').innerHTML=(A.why||[]).map(([v,t])=>`<li data-s="${v>0?'+':v<0?'−':'·'}" class="${v>0?'up':v<0?'dn':''}"><span style="color:var(--ink)">${t}</span></li>`).join('')||'<li>لا توجد بيانات كافية لهذه العملة على هذا الإطار.</li>';
+ const bx=(n,b)=>`<div>${n}<strong class="ltr">${pct(b.p1)}</strong>وصول للهدف 1 · ${b.n1} صفقة<br>الهدف 2: <span class="ltr">${pct(b.p2)}</span> · العائد المتوقع <span class="ltr">${b.exp==null?'—':(b.exp>0?'+':'')+b.exp.toFixed(2)+'R'}</span></div>`;
+ document.getElementById('dBt').innerHTML=A.buy?bx('إشارات الشراء',A.buy)+bx('إشارات الخروج',A.sell):'';
+ document.getElementById('dSr').innerHTML=A.score==null?'':`أقرب مقاومة: <span class="ltr">${f(A.res)}</span> · أقرب دعم: <span class="ltr">${f(A.sup)}</span> · ATR: <span class="ltr">${f(A.atr)}</span>${A.res&&A.plan.dir>0&&A.plan.t1>A.res?'<br><span class="wa">تنبيه: الهدف الأول بعد مقاومة قريبة — قد يتعثر السعر عندها.</span>':''}`;
+ drawChart(A)}
+
+function drawChart(A){const el=document.getElementById('chart');if(!window.LightweightCharts){el.innerHTML='<p class="mut">تعذّر تحميل مكتبة الرسم.</p>';return}
+ if(chart){chart.remove();chart=null}
+ chart=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{type:'solid',color:'#13171c'},textColor:'#8b96a5'},grid:{vertLines:{color:'#1a2027'},horzLines:{color:'#1a2027'}},timeScale:{timeVisible:TF!=='1D',borderColor:'#232a33'},rightPriceScale:{borderColor:'#232a33'}});
+ const B=A.B.slice(-300),d=dec(B[B.length-1].c);
+ const cs=chart.addCandlestickSeries({upColor:'#1fbf75',downColor:'#f0475a',wickUpColor:'#1fbf75',wickDownColor:'#f0475a',borderVisible:false,priceFormat:{type:'price',precision:d,minMove:10**-d}});
+ cs.setData(B.map(b=>({time:b.t/1000,open:b.o,high:b.h,low:b.l,close:b.c})));
+ if(A.I){const I=A.I,off=A.I.C.length,BB=A.B.filter(b=>b.ok),start=Math.max(0,off-300);
+  [['e20','#3aa0ff'],['e50','#e6b450'],['e200','#b07cff']].forEach(([k,c])=>{const s=chart.addLineSeries({color:c,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});s.setData(BB.slice(start).map((b,j)=>({time:b.t/1000,value:I[k][start+j]})).filter(x=>x.value!=null))});
+  const mk=[];for(let i=Math.max(start,201);i<off;i++){const s=A.S[i],p=A.S[i-1];if(s==null||p==null)continue;
+   if(s>=40&&p<40)mk.push({time:BB[i].t/1000,position:'belowBar',color:'#1fbf75',shape:'arrowUp',text:'شراء'});
+   if(s<=-40&&p>-40)mk.push({time:BB[i].t/1000,position:'aboveBar',color:'#f0475a',shape:'arrowDown',text:'خروج'})}
+  cs.setMarkers(mk);
+  if(A.score!=null){const p=A.plan;[[p.entry,'#c5ced8',p.dir>0?'دخول':'خروج'],[p.sl,'#f0475a',p.dir>0?'وقف':'إلغاء'],[p.t1,'#1fbf75','هدف1'],[p.t2,'#1fbf75','هدف2']].forEach(([price,color,title])=>cs.createPriceLine({price,color,lineWidth:1,lineStyle:2,axisLabelVisible:true,title}))}}
+ chart.timeScale().setVisibleLogicalRange({from:B.length-140,to:B.length+5})}
+
+function renderTable(){const fl=document.getElementById('flt').value;
+ const R=rows.filter(r=>fl==='all'||(fl==='buy'?r.lab[2]>0:r.lab[2]<0)).sort((a,b)=>{const x=a[sortK],y=b[sortK];if(x==null)return 1;if(y==null)return -1;return typeof x==='string'?x.localeCompare(y)*sortD:(x-y)*sortD});
+ document.getElementById('tb').innerHTML=R.map(r=>`<tr data-i="${r.inst}"><td data-l="العملة"><strong>${r.sym}</strong></td><td data-l="السعر" class="num ltr">${f(r.last)}</td><td data-l="24س" class="num ltr ${chgCls(r.chg)}">${(r.chg*100).toFixed(2)}%</td><td data-l="الإشارة"><span class="badge ${r.lab[1]}">${r.lab[0]}</span></td><td data-l="القوة" class="num ltr">${r.score==null?'—':r.score}</td><td data-l="نسبة النجاح" class="num ltr ${r.n<8?'mut':''}">${pct(r.win)}</td><td data-l="صفقات الاختبار" class="num ltr">${r.n}</td></tr>`).join('');
+ document.querySelectorAll('#tb tr').forEach(tr=>tr.onclick=async()=>{sel=tr.dataset.i;renderFocus();if(!cache[sel+TF]||cache[sel+TF].pagesShort){document.getElementById('dSub').textContent='جارِ التحليل…';await load(sel,TF)}renderDetail();document.querySelector('.panel').scrollIntoView({behavior:'smooth'})})}
+
+async function tickers(){const d=await api('/api/v5/market/tickers?instType=SPOT');d.forEach(t=>{const last=+t.last,o=+t.open24h;tick[t.instId]={last,chg:o?last/o-1:0,vol:+t.volCcy24h}});return d}
+
+function showErr(e){const el=document.getElementById('err');el.style.display='block';el.innerHTML='تعذّر الاتصال بـ OKX ('+(e&&e.message||e)+'). افتح هذا الملف في متصفح عادي مثل Chrome أو Safari مع اتصال بالإنترنت، وتأكد أن موقع okx.com يفتح عندك.'}
+
+async function refreshFocus(){try{await tickers();document.getElementById('err').style.display='none'}catch(e){showErr(e);return}
+ renderFocus();
+ const jobs=[];FOCUS.forEach(inst=>TFS.forEach(tf=>jobs.push(load(inst,tf,tf===TF?5:3).then(()=>{renderFocus();if(inst===sel&&tf===TF)renderDetail()}).catch(()=>{}))));
+ await Promise.all(jobs);if(!FOCUS.includes(sel)){await load(sel,TF).catch(()=>{});renderDetail()}
+ document.getElementById('upd').textContent='آخر تحديث '+new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}
+
+async function scan(){const id=++scanId;const msg=document.getElementById('scanMsg'),pg=document.getElementById('prog');
+ try{await tickers()}catch(e){showErr(e);return}
+ const list=Object.entries(tick).filter(([k])=>k.endsWith('-USDT')&&!STABLE.test(k)).sort((a,b)=>b[1].vol-a[1].vol).slice(0,+document.getElementById('cnt').value).map(x=>x[0]);
+ rows=[];let done=0;renderTable();
+ await Promise.all(list.map(async inst=>{try{const key=inst+TF;const A=cache[key]&&Date.now()-cache[key].t<6e5?cache[key]:await load(inst,TF,2);if(id!==scanId)return;
+  const t=tick[inst];rows.push({inst,sym:sym(inst),last:t.last,chg:t.chg,score:A.score,lab:A.lab,win:A.bt?A.bt.p1:null,n:A.bt?A.bt.n1:0})}catch(e){}
+  if(id!==scanId)return;done++;pg.style.width=(done/list.length*100)+'%';msg.textContent=`تم ${done} من ${list.length}`;if(done%10===0||done===list.length)renderTable()}));
+ if(id===scanId){msg.textContent=`اكتمل المسح: ${rows.length} عملة · ${rows.filter(r=>r.lab[2]>0).length} إشارة شراء · ${rows.filter(r=>r.lab[2]<0).length} إشارة خروج`;renderTable()}}
+
+function setTF(tf){TF=tf;try{localStorage.setItem('okx_tf',tf)}catch(e){}document.querySelectorAll('#tfs button').forEach(b=>b.classList.toggle('on',b.dataset.tf===tf));renderFocus();renderDetail()}
+document.querySelectorAll('#tfs button').forEach(b=>b.onclick=async()=>{setTF(b.dataset.tf);rows=[];renderTable();await refreshFocus()});
+document.getElementById('ref').onclick=()=>{Object.keys(cache).forEach(k=>delete cache[k]);refreshFocus()};
+document.getElementById('scan').onclick=scan;
+document.getElementById('flt').onchange=renderTable;
+document.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sortD=sortK===k?-sortD:-1;sortK=k;renderTable()});
+setTF(TF);refreshFocus().then(()=>scan());
+setInterval(()=>{FOCUS.forEach(i=>delete cache[i+TF]);refreshFocus()},5*60*1000);
+}
+</script>
+</body>
+</html>
